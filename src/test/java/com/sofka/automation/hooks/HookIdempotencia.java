@@ -1,189 +1,92 @@
 package com.sofka.automation.hooks;
 
-import com.sofka.automation.models.CreateEventRequest;
-import com.sofka.automation.models.GenerateSeatsRequest;
+import com.sofka.automation.api.implementation.RestAssuredCatalogApiClient;
+import com.sofka.automation.api.implementation.RestAssuredInventoryApiClient;
+import com.sofka.automation.services.EventSetupService;
+import com.sofka.automation.services.SeatBlockingService;
+import com.sofka.automation.utils.ApiConstants;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import io.restassured.http.ContentType;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.oneOf;
-
+/**
+ * Hook para configurar el ambiente antes de cada escenario de prueba.
+ * 
+ * Responsabilidad única: Gestionar ciclo de vida de tests (@Before/@After).
+ * Las operaciones específicas de API están delegadas a servicios.
+ * 
+ * Implementa Dependency Inversion Principle:
+ * - Las dependencias son inyectadas a través de constructores
+ * - Depende de abstracciones (interfaces), no implementaciones concretas
+ */
 public class HookIdempotencia {
+    
+    private static final Logger logger = LoggerFactory.getLogger(HookIdempotencia.class);
+    private final EventSetupService eventSetupService;
+    private final SeatBlockingService seatBlockingService;
 
-    private String getApiBaseUrl() {
-        return Serenity.environmentVariables().optionalProperty("catalog.api.url")
-                .orElse("http://localhost:50001");
+    public HookIdempotencia() {
+        this.eventSetupService = new EventSetupService(new RestAssuredCatalogApiClient());
+        this.seatBlockingService = new SeatBlockingService(
+            new RestAssuredCatalogApiClient(),
+            new RestAssuredInventoryApiClient()
+        );
+    }
+
+    // Constructor para testing con dependencias inyectadas
+    public HookIdempotencia(EventSetupService eventSetupService, SeatBlockingService seatBlockingService) {
+        this.eventSetupService = eventSetupService;
+        this.seatBlockingService = seatBlockingService;
     }
 
     @Before(order = 0)
     public void setupStage() {
+        logger.debug("Setting up Serenity stage");
         OnStage.setTheStage(new OnlineCast());
     }
 
     @Before(order = 1)
     public void setupEventForTest(Scenario scenario) {
-        String baseUrl = getApiBaseUrl();
-
-        // Determine if this is a negative scenario test
-        boolean isInvalidReservationTest = scenario.getSourceTagNames().contains("@ReservaInvalida");
-        String eventNamePrefix = isInvalidReservationTest ? "[INVALID_RESERVATION] " : "";
-
-        // 1. Create Event
-        CreateEventRequest eventRequest = CreateEventRequest.builder()
-                .name(eventNamePrefix + "Automation Test Event " + System.currentTimeMillis())
-                .description("Event created for automated testing of seat reservation")
-                .eventDate(LocalDateTime.now().plusDays(7).toString())
-                .venue("Virtual Theater")
-                .maxCapacity(100)
-                .basePrice(new BigDecimal("50.00"))
-                .build();
-
-        String eventId = given()
-                .baseUri(baseUrl)
-                .contentType(ContentType.JSON)
-                .body(eventRequest)
-                .when()
-                .post("/admin/events")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
-
-        Serenity.setSessionVariable("CREATED_EVENT_ID").to(eventId);
-
-        // 2. Generate Seats (5 seats in one row)
-        GenerateSeatsRequest.SeatSectionConfiguration section = GenerateSeatsRequest.SeatSectionConfiguration.builder()
-                .sectionCode("A")
-                .rows(1)
-                .seatsPerRow(5)
-                .priceMultiplier(new BigDecimal("1.0"))
-                .build();
-
-        GenerateSeatsRequest generateSeatsRequest = GenerateSeatsRequest.builder()
-                        .sectionConfigurations(List.of(section))
-                        .build();
-
-        given()
-                .baseUri(baseUrl)
-                .contentType(ContentType.JSON)
-                .body(generateSeatsRequest)
-                .when()
-                .post("/admin/events/" + eventId + "/seats")
-                .then()
-                .statusCode(200);
+        logger.info("Setting up test for scenario: {}", scenario.getName());
+        
+        boolean isInvalidReservationTest = isInvalidReservationScenario(scenario);
+        String eventId = eventSetupService.createEventWithSeats(isInvalidReservationTest);
+        
+        Serenity.setSessionVariable(ApiConstants.SESSION_CREATED_EVENT_ID).to(eventId);
         
         if (isInvalidReservationTest) {
-            System.out.println("✅ Created INVALID_RESERVATION test event with ID: " + eventId);
-        } else {
-            System.out.println("✅ Created test event with ID: " + eventId);
+            logger.info("Pre-blocking seat for invalid reservation test");
+            seatBlockingService.blockFirstAvailableSeat(eventId);
         }
-
-        // 3. For Negative Scenarios: Reserve one seat by other user if @ReservaInvalida tag is present
-        if (isInvalidReservationTest) {
-            System.out.println("⚙️  Scenario @ReservaInvalida detected. Pre-blocking seat for event " + eventId);
-            forzarAsientoReservado(eventId);
-        }
+        
+        logger.info("Test setup completed for event: {}", eventId);
     }
 
-    private String getInventoryApiBaseUrl() {
-        return Serenity.environmentVariables().optionalProperty("inventory.api.url")
-                .orElse("http://localhost:50005");
-    }
-
-public static void forzarAsientoReservado(String eventId) {
-    String catalogUrl = "http://localhost:50001";
-    String inventoryUrl = "http://localhost:50002";
-    String orderingUrl = "http://localhost:5003";
-
-    try {
-        // 1. Obtener el seatmap con los asientos disponibles
-        System.out.println("🔍 Fetching seatmap from: " + catalogUrl + "/events/" + eventId + "/seatmap/");
-        
-        String response = given().baseUri(catalogUrl).when().get("/events/" + eventId + "/seatmap/")
-                .then().statusCode(200).extract().asString();
-        
-        System.out.println("📊 Seatmap Response: " + response);
-        
-        io.restassured.path.json.JsonPath jsonPath = io.restassured.path.json.JsonPath.from(response);
-        
-        // Obtener los asientos disponibles del seatmap
-        List<String> availableSeats = jsonPath.getList("seats.findAll { it.status == 'available' }.id");
-        Double seatPrice = null;
-        
-        System.out.println("📋 Available seats found: " + availableSeats);
-        
-        // Si no encontramos con el filtro, obtenemos todos los asientos
-        if (availableSeats == null || availableSeats.isEmpty()) {
-            availableSeats = jsonPath.getList("seats.id");
-            System.out.println("📋 All seats in seatmap: " + availableSeats);
-        }
-        
-        try {
-            seatPrice = jsonPath.getDouble("seats[0].basePrice");
-        } catch (Exception e) {
-            System.out.println("⚠️  Could not extract price, using default: " + e.getMessage());
-            seatPrice = 50.0;
-        }
-
-        if (availableSeats != null && !availableSeats.isEmpty()) {
-            String seatId = availableSeats.get(0);
-            String randomBlockingUser = java.util.UUID.randomUUID().toString();
-            
-            System.out.println("🎫 Using seatId: " + seatId);
-            System.out.println("👤 Blocking with customerId: " + randomBlockingUser);
-
-            // POST a Inventory (SOLO seatId y customerId)
-            String inventoryPayload = String.format("{\"seatId\": \"%s\", \"customerId\": \"%s\"}", 
-                                           seatId, randomBlockingUser);
-            
-            System.out.println("📤 Sending to Inventory: POST " + inventoryUrl + "/reservations");
-            System.out.println("   Payload: " + inventoryPayload);
-
-            String reservationId = given()
-                .baseUri(inventoryUrl)
-                .contentType(ContentType.JSON)
-                .body(inventoryPayload)
-                .when().post("/reservations")
-                .then().statusCode(oneOf(200, 201))
-                .extract().path("reservationId");
-            
-            System.out.println("✅ Reservation created with ID: " + reservationId);
-            Serenity.setSessionVariable("BLOCKED_SEAT_ID").to(seatId);
-            System.out.println("✅ ÉXITO: Asiento " + seatId + " bloqueado para el test negativo.");
-        } else {
-            System.out.println("❌ ERROR: No se encontraron asientos en el seatmap del evento");
-        }
-    } catch (Exception e) {
-        System.out.println("❌ ERROR en forzarAsientoReservado: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
     @After
     public void cleanupTestEvent() {
-        // Disabling cleanup as requested to avoid 400 errors blocking the run
-        /*
-        String eventId = Serenity.sessionVariableCalled("CREATED_EVENT_ID");
+        String eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_CREATED_EVENT_ID);
         if (eventId != null) {
-            String baseUrl = getApiBaseUrl();
-            
-            given()
-                .baseUri(baseUrl)
-                .when()
-                .post("/admin/events/" + eventId + "/deactivate")
-                .then()
-                .statusCode(200);
-                
-            System.out.println("Deactivated test event with ID: " + eventId);
+            try {
+                logger.info("Cleaning up test event: {}", eventId);
+                new RestAssuredCatalogApiClient().deactivateEvent(eventId);
+                logger.info("Event cleanup completed: {}", eventId);
+            } catch (Exception e) {
+                logger.error("Error during cleanup for event: {}", eventId, e);
+            }
         }
-        */
+    }
+
+    /**
+     * Checks if current scenario is for invalid reservation testing
+     * @param scenario Cucumber scenario
+     * @return true if scenario has @ReservaInvalida tag
+     */
+    private boolean isInvalidReservationScenario(Scenario scenario) {
+        return scenario.getSourceTagNames().contains(ApiConstants.TAG_INVALID_RESERVATION);
     }
 }

@@ -35,7 +35,7 @@ public class ElAsientoEstaDeshabilitado implements Question<Boolean> {
         }
     }
 
-    public static ElAsientoEstaDeshabilitado estaDeshabilirtado() {
+    public static ElAsientoEstaDeshabilitado estaDeshabilitado() {
         return new ElAsientoEstaDeshabilitado();
     }
 }
