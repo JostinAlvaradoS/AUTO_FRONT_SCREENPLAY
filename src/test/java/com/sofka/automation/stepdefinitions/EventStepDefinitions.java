@@ -1,6 +1,7 @@
 package com.sofka.automation.stepdefinitions;
 
 import com.sofka.automation.questions.ElEstadoDelAsiento;
+import com.sofka.automation.questions.ElAsientoEstaDeshabilitado;
 import com.sofka.automation.tasks.NavegarAlEvento;
 import com.sofka.automation.tasks.SeleccionarAsiento;
 import io.cucumber.java.es.Cuando;
@@ -12,6 +13,7 @@ import net.serenitybdd.screenplay.actors.OnlineCast;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 public class EventStepDefinitions {
 
@@ -113,14 +115,20 @@ public class EventStepDefinitions {
 
     @Cuando("un nuevo cliente intenta seleccionar ese mismo asiento para comprarlo")
     public void intentaSeleccionarAsientoOcupado() {
+        // No hacemos click porque el asiento está disabled
+        // Solo navegamos al evento para ver el mapa con el asiento bloqueado
+        String eventId = Serenity.sessionVariableCalled("CREATED_EVENT_ID");
         OnStage.theActorInTheSpotlight().attemptsTo(
-                SeleccionarAsiento.conEstado("Reserved")
+                NavegarAlEvento.conId(eventId)
         );
     }
 
     @Entonces("el sistema debe mostrar indisponibilidad del asiento")
     public void sistemaMuestraIndisponibilidad() {
-        // Verificamos que el asiento no se puede seleccionar o muestra el estado ocupado
+        // Verificamos que el asiento está deshabilitado (disabled) en el HTML
+        OnStage.theActorInTheSpotlight().should(
+                seeThat(ElAsientoEstaDeshabilitado.estaDeshabilirtado(), is(true))
+        );
     }
 
     @Dado("que el cliente tiene una reserva activa")

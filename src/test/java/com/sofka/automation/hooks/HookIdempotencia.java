@@ -33,9 +33,13 @@ public class HookIdempotencia {
     public void setupEventForTest(Scenario scenario) {
         String baseUrl = getApiBaseUrl();
 
+        // Determine if this is a negative scenario test
+        boolean isInvalidReservationTest = scenario.getSourceTagNames().contains("@ReservaInvalida");
+        String eventNamePrefix = isInvalidReservationTest ? "[INVALID_RESERVATION] " : "";
+
         // 1. Create Event
         CreateEventRequest eventRequest = CreateEventRequest.builder()
-                .name("Automation Test Event " + System.currentTimeMillis())
+                .name(eventNamePrefix + "Automation Test Event " + System.currentTimeMillis())
                 .description("Event created for automated testing of seat reservation")
                 .eventDate(LocalDateTime.now().plusDays(7).toString())
                 .venue("Virtual Theater")
@@ -77,11 +81,15 @@ public class HookIdempotencia {
                 .then()
                 .statusCode(200);
         
-        System.out.println("Created test event with ID: " + eventId);
+        if (isInvalidReservationTest) {
+            System.out.println("✅ Created INVALID_RESERVATION test event with ID: " + eventId);
+        } else {
+            System.out.println("✅ Created test event with ID: " + eventId);
+        }
 
         // 3. For Negative Scenarios: Reserve one seat by other user if @ReservaInvalida tag is present
-        if (scenario.getSourceTagNames().contains("@ReservaInvalida")) {
-            System.out.println("DEBUG: Scenario @ReservaInvalida detected via Scenario object. Pre-blocking seat for event " + eventId);
+        if (isInvalidReservationTest) {
+            System.out.println("⚙️  Scenario @ReservaInvalida detected. Pre-blocking seat for event " + eventId);
             forzarAsientoReservado(eventId);
         }
     }
@@ -96,44 +104,67 @@ public static void forzarAsientoReservado(String eventId) {
     String inventoryUrl = "http://localhost:50002";
     String orderingUrl = "http://localhost:5003";
 
-    // 1. Obtener los IDs de los asientos (Mantenemos tu lógica de JsonPath que está perfecta)
-    String response = given().baseUri(catalogUrl).when().get("/admin/events/" + eventId)
-            .then().statusCode(200).extract().asString();
-    
-    // Simplificación de path (ajusta según la estructura real de tu JSON de Catalog)
-    List<String> seatIds = io.restassured.path.json.JsonPath.from(response).getList("sections.seats.id.flatten()");
-    Double seatPrice = io.restassured.path.json.JsonPath.from(response).getDouble("sections[0].seats[0].basePrice");
+    try {
+        // 1. Obtener el seatmap con los asientos disponibles
+        System.out.println("🔍 Fetching seatmap from: " + catalogUrl + "/events/" + eventId + "/seatmap/");
+        
+        String response = given().baseUri(catalogUrl).when().get("/events/" + eventId + "/seatmap/")
+                .then().statusCode(200).extract().asString();
+        
+        System.out.println("📊 Seatmap Response: " + response);
+        
+        io.restassured.path.json.JsonPath jsonPath = io.restassured.path.json.JsonPath.from(response);
+        
+        // Obtener los asientos disponibles del seatmap
+        List<String> availableSeats = jsonPath.getList("seats.findAll { it.status == 'available' }.id");
+        Double seatPrice = null;
+        
+        System.out.println("📋 Available seats found: " + availableSeats);
+        
+        // Si no encontramos con el filtro, obtenemos todos los asientos
+        if (availableSeats == null || availableSeats.isEmpty()) {
+            availableSeats = jsonPath.getList("seats.id");
+            System.out.println("📋 All seats in seatmap: " + availableSeats);
+        }
+        
+        try {
+            seatPrice = jsonPath.getDouble("seats[0].basePrice");
+        } catch (Exception e) {
+            System.out.println("⚠️  Could not extract price, using default: " + e.getMessage());
+            seatPrice = 50.0;
+        }
 
-    if (seatIds != null && !seatIds.isEmpty()) {
-        String seatId = seatIds.get(0); 
-        String randomBlockingUser = java.util.UUID.randomUUID().toString();
+        if (availableSeats != null && !availableSeats.isEmpty()) {
+            String seatId = availableSeats.get(0);
+            String randomBlockingUser = java.util.UUID.randomUUID().toString();
+            
+            System.out.println("🎫 Using seatId: " + seatId);
+            System.out.println("👤 Blocking with customerId: " + randomBlockingUser);
 
-        // 1. POST a Inventory (SOLO seatId y customerId)
-        String inventoryPayload = String.format("{\"seatId\": \"%s\", \"customerId\": \"%s\"}", 
-                                       seatId, randomBlockingUser);
+            // POST a Inventory (SOLO seatId y customerId)
+            String inventoryPayload = String.format("{\"seatId\": \"%s\", \"customerId\": \"%s\"}", 
+                                           seatId, randomBlockingUser);
+            
+            System.out.println("📤 Sending to Inventory: POST " + inventoryUrl + "/reservations");
+            System.out.println("   Payload: " + inventoryPayload);
 
-        String reservationId = given()
-            .baseUri(inventoryUrl)
-            .contentType(ContentType.JSON)
-            .body(inventoryPayload)
-            .when().post("/reservations")
-            .then().statusCode(oneOf(200, 201)) // Aceptamos ambos por seguridad
-            .extract().path("reservationId");
-
-        // 2. POST a Ordering (Debe incluir seatId, price y userId)
-        String orderingPayload = String.format(
-            "{\"reservationId\": \"%s\", \"seatId\": \"%s\", \"price\": %f, \"userId\": \"%s\"}", 
-            reservationId, seatId, seatPrice, randomBlockingUser);
-
-        given()
-            .baseUri(orderingUrl)
-            .contentType(ContentType.JSON)
-            .body(orderingPayload)
-            .when().post("/cart/add")
-            .then().statusCode(200);
-
-        Serenity.setSessionVariable("BLOCKED_SEAT_ID").to(seatId);
-        System.out.println("✅ ÉXITO: Asiento " + seatId + " bloqueado para el test negativo.");
+            String reservationId = given()
+                .baseUri(inventoryUrl)
+                .contentType(ContentType.JSON)
+                .body(inventoryPayload)
+                .when().post("/reservations")
+                .then().statusCode(oneOf(200, 201))
+                .extract().path("reservationId");
+            
+            System.out.println("✅ Reservation created with ID: " + reservationId);
+            Serenity.setSessionVariable("BLOCKED_SEAT_ID").to(seatId);
+            System.out.println("✅ ÉXITO: Asiento " + seatId + " bloqueado para el test negativo.");
+        } else {
+            System.out.println("❌ ERROR: No se encontraron asientos en el seatmap del evento");
+        }
+    } catch (Exception e) {
+        System.out.println("❌ ERROR en forzarAsientoReservado: " + e.getMessage());
+        e.printStackTrace();
     }
 }
     @After

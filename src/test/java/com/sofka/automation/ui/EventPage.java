@@ -16,6 +16,9 @@ public class EventPage {
     public static final Target AVAILABLE_SEAT = Target.the("available seat button")
             .locatedBy("//button[contains(@aria-label, 'Available')]");
 
+    public static final Target DISABLED_SEAT = Target.the("disabled seat button")
+            .locatedBy("//button[@disabled and contains(@aria-label, 'Reserved')]");
+
     public static final Target RESERVE_BUTTON = Target.the("reserve and add to cart button")
             .located(By.xpath("//button[contains(text(), 'Reserve & Add to Cart')]"));
 
