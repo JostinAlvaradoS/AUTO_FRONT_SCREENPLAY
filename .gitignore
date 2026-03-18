@@ -1,0 +1,53 @@
+# IntelliJ project files
+.idea/
+*.iml
+*.iws
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+bin/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Gradle
+.gradle/
+build/
+
+# Maven (if applicable)
+target/
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Serenity / Thucydides
+target/site/serenity/
+test-results/
+
+# Node.js (frontend within shared-specs)
+shared-specs/frontend/node_modules/
+shared-specs/frontend/.next/
+shared-specs/frontend/out/
+shared-specs/frontend/build/
+shared-specs/frontend/.env*.local
+
+# Python (if any)
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Other
+.history/
+.temp/
+.tmp/
