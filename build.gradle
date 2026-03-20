@@ -69,7 +69,8 @@ test {
 }
 
 serenity {
-    reports = ["single-page-html"]
+    reports = ["single-page-html", "standard-html"]
+    outputDirectory = "target/site/serenity"
 }
 
 gradle.startParameter.continueOnFailure = true
