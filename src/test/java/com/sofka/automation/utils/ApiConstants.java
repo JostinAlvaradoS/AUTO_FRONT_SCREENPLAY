@@ -46,9 +46,21 @@ public class ApiConstants {
     public static final String SESSION_BLOCKING_USER_ID = "BLOCKING_USER_ID";
     
     // Test Tags
-    public static final String TAG_INVALID_RESERVATION = "@ReservaInvalida";
-    public static final String TAG_VALID_RESERVATION = "@ReservaValida";
-    
+    public static final String TAG_INVALID_RESERVATION    = "@ReservaInvalida";
+    public static final String TAG_VALID_RESERVATION      = "@ReservaValida";
+    public static final String TAG_ALL_SEATS_BLOCKED      = "@TodosAsientosBlockeados";
+
+    // Waitlist API
+    public static final String DEFAULT_WAITLIST_API_URL      = "http://localhost:5006";
+    public static final String WAITLIST_API_URL_KEY          = "waitlist.api.url";
+    public static final String WAITLIST_JOIN_ENDPOINT        = "/api/v1/waitlist/join";
+    public static final String WAITLIST_HAS_PENDING_ENDPOINT = "/api/v1/waitlist/has-pending";
+
+    // Waitlist Session Keys
+    public static final String SESSION_WAITLIST_EVENT_ID  = "WAITLIST_EVENT_ID";
+    public static final String SESSION_WAITLIST_EMAIL     = "WAITLIST_EMAIL";
+    public static final String SESSION_WAITLIST_2ND_EMAIL = "WAITLIST_SECOND_EMAIL";
+
     private ApiConstants() {
         throw new AssertionError("Utility class should not be instantiated");
     }
