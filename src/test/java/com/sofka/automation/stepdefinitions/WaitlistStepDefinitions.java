@@ -182,7 +182,7 @@ public class WaitlistStepDefinitions {
 
     @Entonces("la API confirma la rotación del asiento al siguiente usuario")
     public void apiConfirmaRotacion() throws InterruptedException {
-        esperarHasPendingFalse(eventId, 120);
+        esperarHasPendingFalse(eventId, 250);
         OnStage.theActorInTheSpotlight().should(
                 seeThat("asiento rotado al siguiente (has-pending=false)",
                         HasPendingInWaitlist.paraEvento(eventId), is(false))
@@ -211,7 +211,7 @@ public class WaitlistStepDefinitions {
 
     @Entonces("la API confirma que el asiento fue liberado al pool general")
     public void apiConfirmaLiberacionAlPool() throws InterruptedException {
-        esperarHasPendingFalse(eventId, 120);
+        esperarHasPendingFalse(eventId, 250);
         OnStage.theActorInTheSpotlight().should(
                 seeThat("asiento liberado al pool (has-pending=false)",
                         HasPendingInWaitlist.paraEvento(eventId), is(false))

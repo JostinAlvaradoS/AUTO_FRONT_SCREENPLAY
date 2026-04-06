@@ -63,6 +63,8 @@ public class WaitlistHook {
             // Crear evento y bloquear TODOS los asientos (evento agotado)
             eventId = eventSetupService.createEventWithSeats(false);
             blockAllSeats(eventId);
+            // Allow Kafka reservation-created event to propagate to Catalog service
+            try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
         } else {
             // Crear evento con asientos disponibles
             eventId = eventSetupService.createEventWithSeats(false);
@@ -104,7 +106,7 @@ public class WaitlistHook {
 
             for (String seatId : seatmap.getAvailableSeats()) {
                 String customerId = java.util.UUID.randomUUID().toString();
-                String body = String.format("{\"seatId\":\"%s\",\"customerId\":\"%s\"}", seatId, customerId);
+                String body = String.format("{\"seatId\":\"%s\",\"customerId\":\"%s\",\"eventId\":\"%s\"}", seatId, customerId, eventId);
                 RestAssured.given()
                         .baseUri(ApiConstants.DEFAULT_INVENTORY_API_URL)
                         .contentType("application/json")
