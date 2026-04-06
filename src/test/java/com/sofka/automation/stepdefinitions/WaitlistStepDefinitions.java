@@ -98,10 +98,15 @@ public class WaitlistStepDefinitions {
 
     @Dado("que {string} ya está registrado en la lista del evento vía UI")
     public void yaRegistradoViaUI(String email) {
-        // El hook @RegistroDuplicado ya pre-registró este email vía API.
-        // Solo guardamos el eventId y el email para el paso @Cuando.
         eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_WAITLIST_EVENT_ID);
-        logger.info("'{}' ya pre-registrado en waitlist vía API (setup en hook)", email);
+        Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EMAIL).to(email);
+        logger.info("Realizando primer registro vía UI para '{}'", email);
+        OnStage.theActorInTheSpotlight().attemptsTo(NavegarAlEventoAgotado.conId(eventId));
+        OnStage.theActorInTheSpotlight().attemptsTo(UnirseAWaitlist.conEmail(email));
+        OnStage.theActorInTheSpotlight().should(
+                seeThat("el primer registro debe ser exitoso",
+                        ElResultadoDeWaitlist.mostroExito(), is(true))
+        );
     }
 
     @Cuando("el mismo correo intenta unirse al waitlist nuevamente")
@@ -124,7 +129,7 @@ public class WaitlistStepDefinitions {
     // ESCENARIOS 4-6: verificación vía API Question
     // =====================================================================
 
-    @Dado("{string} es el primero en la lista de espera del evento")
+    @Dado("que {string} es el primero en la lista de espera del evento")
     public void primeroEnListaDeEspera(String email) {
         eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_WAITLIST_EVENT_ID);
         Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EMAIL).to(email);
@@ -160,7 +165,7 @@ public class WaitlistStepDefinitions {
         logger.info("Envío de correo: comportamiento esperado del sistema");
     }
 
-    @Dado("{string} fue asignado y no realizó el pago en 30 minutos")
+    @Dado("que {string} fue asignado y no realizó el pago en 30 minutos")
     public void fueAsignadoYNoPago(String email) {
         eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_WAITLIST_EVENT_ID);
         Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EMAIL).to(email);

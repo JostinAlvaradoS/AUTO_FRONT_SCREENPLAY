@@ -73,14 +73,7 @@ public class WaitlistHook {
         Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EVENT_ID).to(eventId);
         logger.info("Evento waitlist listo: {} (agotado={})", eventId, needsSoldOut);
 
-        // Para @RegistroDuplicado: pre-registrar el email via API para que el test
-        // solo deba intentar registrarse de nuevo y verificar el rechazo.
-        if (scenario.getSourceTagNames().contains("@RegistroDuplicado")) {
-            String preEmail = "jostin@example.com";
-            preRegistrarEmail(preEmail, eventId);
-            Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EMAIL).to(preEmail);
-            logger.info("Email '{}' pre-registrado via API para escenario @RegistroDuplicado", preEmail);
-        }
+        // El escenario @RegistroDuplicado realiza el primer registro vía UI en el step @Dado
     }
 
     @After

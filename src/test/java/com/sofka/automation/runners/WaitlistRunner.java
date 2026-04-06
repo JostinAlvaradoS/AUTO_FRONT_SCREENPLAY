@@ -11,7 +11,7 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasspathResource("features/hu_waitlist.feature")
 @ConfigurationParameter(
         key   = Constants.FILTER_TAGS_PROPERTY_NAME,
-        value = "@RegistroExitoso or @TicketsDisponibles or @RegistroDuplicado"
+        value = "@RegistroExitoso or @TicketsDisponibles or @RegistroDuplicado or @AsignacionAutomatica or @LiberacionConSiguiente or @LiberacionSinCola"
 )
 @ConfigurationParameter(
         key   = Constants.GLUE_PROPERTY_NAME,
