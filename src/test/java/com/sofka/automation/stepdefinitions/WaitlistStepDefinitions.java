@@ -49,22 +49,18 @@ public class WaitlistStepDefinitions {
         );
     }
 
-    @Entonces("la UI muestra el mensaje de éxito de waitlist")
-    public void uiMuestraMensajeExito() {
+    @Entonces("el sistema lo registra correctamente")
+    public void sistemaLoRegistraCorrectamente() {
         OnStage.theActorInTheSpotlight().should(
                 seeThat("el mensaje de éxito 'You're on the list!'",
                         ElResultadoDeWaitlist.mostroExito(), is(true))
         );
-    }
-
-    @Y("el usuario recibe su posición en la cola de espera")
-    public void usuarioRecibePosicion() {
         OnStage.theActorInTheSpotlight().should(
                 seeThat("la posición en la cola",
                         ElResultadoDeWaitlist.posicionEnCola(), not(emptyOrNullString()))
         );
         String pos = ElResultadoDeWaitlist.posicionEnCola().answeredBy(OnStage.theActorInTheSpotlight());
-        logger.info("Posición en cola: {}", pos);
+        logger.info("Registro exitoso. Posición en cola: {}", pos);
     }
 
     // =====================================================================
@@ -84,8 +80,8 @@ public class WaitlistStepDefinitions {
         );
     }
 
-    @Entonces("el botón de waitlist no es visible en la UI")
-    public void botonWaitlistNoVisible() {
+    @Entonces("el sistema indica que aún hay tickets disponibles")
+    public void sistemaIndicaQueHayTickets() {
         OnStage.theActorInTheSpotlight().should(
                 seeThat("el botón 'Join the Waitlist'",
                         ElResultadoDeWaitlist.botonWaitlistVisible(), is(false))
@@ -117,8 +113,8 @@ public class WaitlistStepDefinitions {
         logger.info("Intento de registro duplicado para '{}' — se espera rechazo", email);
     }
 
-    @Entonces("la UI muestra el mensaje de conflicto de la API")
-    public void uiMuestraMensajeConflicto() {
+    @Entonces("el sistema indica que ya está en la lista de espera")
+    public void sistemaIndicaQueYaEstaEnLista() {
         OnStage.theActorInTheSpotlight().should(
                 seeThat("mensaje de error (conflicto 409)",
                         ElResultadoDeWaitlist.mostroError(), is(true))

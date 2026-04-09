@@ -9,20 +9,19 @@ Característica: Sistema de Lista de Espera Inteligente — UI Screenplay
   Escenario: Registro exitoso en lista de espera
     Dado que el evento "Concierto Rock 2026" está agotado y el usuario navega a su página
     Cuando el usuario se une a la waitlist con el email "jostin@example.com"
-    Entonces la UI muestra el mensaje de éxito de waitlist
-    Y el usuario recibe su posición en la cola de espera
+    Entonces el sistema lo registra correctamente
 
   @TicketsDisponibles
   Escenario: Intento de registro con tickets disponibles
     Dado que el evento "Concierto Rock 2026" tiene tickets disponibles
     Cuando el usuario navega a la página del evento con stock
-    Entonces el botón de waitlist no es visible en la UI
+    Entonces el sistema indica que aún hay tickets disponibles
 
   @RegistroDuplicado
   Escenario: Registro duplicado en la misma lista
     Dado que "jostin@example.com" ya está registrado en la lista del evento vía UI
     Cuando el mismo correo intenta unirse al waitlist nuevamente
-    Entonces la UI muestra el mensaje de conflicto de la API
+    Entonces el sistema indica que ya está en la lista de espera
 
   @AsignacionAutomatica
   Escenario: Asignación automática al expirar una reserva
