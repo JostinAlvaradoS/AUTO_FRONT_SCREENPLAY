@@ -12,10 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import static io.restassured.RestAssured.given;
 
-/**
- * RestAssured implementation of CatalogApiClient.
- * Handles all HTTP calls to Catalog API with proper error handling and logging.
- */
 public class RestAssuredCatalogApiClient implements CatalogApiClient {
     
     private static final Logger logger = LoggerFactory.getLogger(RestAssuredCatalogApiClient.class);
@@ -109,7 +105,7 @@ public class RestAssuredCatalogApiClient implements CatalogApiClient {
             }
         } catch (Exception e) {
             logger.warn("Deactivate event failed with error (non-blocking): {}", e.getMessage());
-            // No relanzar excepción - cleanup no debe romper tests
+            
         }
     }
 }

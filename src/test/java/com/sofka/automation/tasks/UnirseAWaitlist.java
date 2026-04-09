@@ -9,10 +9,6 @@ import net.serenitybdd.core.annotations.findby.By;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: Flujo completo para unirse a la lista de espera desde la UI.
- * Secuencia: abrir modal → ingresar email → submit.
- */
 public class UnirseAWaitlist implements Task {
 
     private final String email;

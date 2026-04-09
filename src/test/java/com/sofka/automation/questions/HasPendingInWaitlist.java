@@ -7,13 +7,6 @@ import net.serenitybdd.screenplay.Question;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Question: Consulta GET /api/v1/waitlist/has-pending?eventId={eventId}
- * y retorna el valor booleano de hasPending.
- *
- * Usada en escenarios 4-6 para verificar el estado de la cola
- * después de expiraciones y rotaciones del sistema.
- */
 public class HasPendingInWaitlist implements Question<Boolean> {
 
     private static final Logger logger = LoggerFactory.getLogger(HasPendingInWaitlist.class);

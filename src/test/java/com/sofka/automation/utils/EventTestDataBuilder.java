@@ -7,10 +7,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Builder for creating test event data
- * Follows Builder pattern for flexible test data creation
- */
 public class EventTestDataBuilder {
     
     private String eventName;

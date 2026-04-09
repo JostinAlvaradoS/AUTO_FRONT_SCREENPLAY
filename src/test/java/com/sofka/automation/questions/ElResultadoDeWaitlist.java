@@ -5,9 +5,6 @@ import net.serenitybdd.screenplay.questions.WebElementQuestion;
 import net.serenitybdd.screenplay.targets.Target;
 import org.openqa.selenium.By;
 
-/**
- * Questions para verificar el estado del WaitlistModal en la UI.
- */
 public class ElResultadoDeWaitlist {
 
     private static final Target SUCCESS_MESSAGE = Target.the("mensaje de éxito waitlist")
@@ -22,12 +19,10 @@ public class ElResultadoDeWaitlist {
     private static final Target POSITION_TEXT = Target.the("posición en la cola")
             .located(By.cssSelector("span.font-bold.text-accent.text-base"));
 
-    /** Verifica si el mensaje de éxito "You're on the list!" es visible */
     public static Question<Boolean> mostroExito() {
         return actor -> SUCCESS_MESSAGE.resolveFor(actor).isDisplayed();
     }
 
-    /** Verifica si hay un mensaje de error visible */
     public static Question<Boolean> mostroError() {
         return actor -> {
             try {
@@ -38,7 +33,6 @@ public class ElResultadoDeWaitlist {
         };
     }
 
-    /** Retorna el texto del mensaje de error */
     public static Question<String> textoDelError() {
         return actor -> {
             try {
@@ -49,7 +43,6 @@ public class ElResultadoDeWaitlist {
         };
     }
 
-    /** Verifica si el botón "Join the Waitlist" es visible */
     public static Question<Boolean> botonWaitlistVisible() {
         return actor -> {
             try {
@@ -60,7 +53,6 @@ public class ElResultadoDeWaitlist {
         };
     }
 
-    /** Retorna el texto de la posición en la cola (ej: "#1") */
     public static Question<String> posicionEnCola() {
         return actor -> {
             try {
@@ -72,6 +64,6 @@ public class ElResultadoDeWaitlist {
     }
 
     private ElResultadoDeWaitlist() {
-        // Utility class
+        
     }
 }

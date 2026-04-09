@@ -18,10 +18,6 @@ import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-/**
- * Step definitions for seat reservation scenarios.
- * Defines behavior for user interactions with the event seatmap.
- */
 public class EventStepDefinitions {
     
     private static final Logger logger = LoggerFactory.getLogger(EventStepDefinitions.class);
@@ -52,13 +48,13 @@ public class EventStepDefinitions {
     @Dado("que soy un usuario autenticado")
     public void usuarioAutenticado() {
         logger.debug("Authentication step - covered by navigation");
-        // Step ya cubierto en la navegación para el MVP
+        
     }
 
     @Dado("que un asiento se encuentra en estado {string}")
     public void asientoEnEstado(String estado) {
         logger.debug("Verifying seat state: {}", estado);
-        // Verificamos que el asiento esté disponible para la prueba
+        
     }
 
     @Cuando("el cliente selecciona dicho asiento para reservarlo")
@@ -87,7 +83,6 @@ public class EventStepDefinitions {
         assertSeatIsReserved();
     }
 
-    // Scenarios: Liberación automática
     @Dado("que el cliente ya tiene un asiento en su carrito con una reserva activa")
     public void clienteTieneAsientoEnCarrito() {
         logger.info("Client has active seat reservation in cart");
@@ -99,13 +94,13 @@ public class EventStepDefinitions {
     @Dado("el tiempo de reserva temporal permitido ha expirado sin que se complete la compra")
     public void tiempoHaExpirado() {
         logger.debug("TTL expiration simulation");
-        // Aquí podríamos simular el paso del tiempo vía API o esperando el TTL real si es corto
+        
     }
 
     @Cuando("el sistema procesa la expiración de dicha reserva")
     public void sistemaProcesaExpiracion() {
         logger.debug("System processes TTL expiration");
-        // El sistema lo hace solo, o podemos forzarlo vía API
+        
     }
 
     @Entonces("el asiento debe volver automáticamente al estado {string} en el mapa")
@@ -119,22 +114,19 @@ public class EventStepDefinitions {
     @Entonces("el sistema debe notificar al cliente que su reserva ha expirado por tiempo agotado")
     public void sistemaNotificaExpiracion() {
         logger.debug("TTL expiration notification validation");
-        // Pendiente: Question para el toast/notificación de expiración
+        
     }
 
-    // Scenario: Intento de reserva de un asiento ya ocupado
     @Dado("que un asiento ya ha sido reservado por otro usuario previamente")
     public void asientoReservadoPreviamente() {
         logger.info("Seat pre-blocked by HookIdempotencia for invalid reservation test");
-        // La pre-reserva se maneja en el HookIdempotencia mediante el tag @ReservaInvalida
-        // para asegurar que el estado se aplique sobre el evento recién creado.
+        
     }
 
     @Cuando("un nuevo cliente intenta seleccionar ese mismo asiento para comprarlo")
     public void intentaSeleccionarAsientoOcupado() {
         logger.info("Client viewing event with blocked seat");
-        // No hacemos click porque el asiento está disabled
-        // Solo navegamos al evento para ver el mapa con el asiento bloqueado
+        
         String eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_CREATED_EVENT_ID);
         OnStage.theActorInTheSpotlight().attemptsTo(
                 NavegarAlEvento.conId(eventId)
@@ -144,7 +136,7 @@ public class EventStepDefinitions {
     @Entonces("el sistema debe mostrar indisponibilidad del asiento")
     public void sistemaMuestraIndisponibilidad() {
         logger.info("Validating blocked seat is disabled in UI");
-        // Verificamos que el asiento está deshabilitado (disabled) en el HTML
+        
         OnStage.theActorInTheSpotlight().should(
                 seeThat(ElAsientoEstaDeshabilitado.estaDeshabilitado(), is(true))
         );
@@ -168,10 +160,6 @@ public class EventStepDefinitions {
         logger.debug("TTL timer display validation");
     }
 
-    /**
-     * Assertion helper: Validates that a seat is in Reserved state
-     * Extracts common validation logic (DRY principle)
-     */
     private void assertSeatIsReserved() {
         OnStage.theActorInTheSpotlight().should(
                 seeThat(ElEstadoDelAsiento.es(), equalTo("Reserved"))

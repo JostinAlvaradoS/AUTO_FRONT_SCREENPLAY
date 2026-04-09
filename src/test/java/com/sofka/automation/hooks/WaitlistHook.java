@@ -19,15 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-/**
- * Hooks para los escenarios de Waitlist en AUTO_FRONT_SCREENPLAY.
- *
- * Separa el ciclo de vida de los tests de waitlist del HookIdempotencia existente.
- * - @RegistroExitoso, @RegistroDuplicado, @AsignacionAutomatica, etc.:
- *   Crea evento + todos los asientos bloqueados (evento agotado)
- * - @TicketsDisponibles:
- *   Crea evento + asientos sin bloquear (stock disponible)
- */
 public class WaitlistHook {
 
     private static final Logger logger = LoggerFactory.getLogger(WaitlistHook.class);
@@ -60,20 +51,19 @@ public class WaitlistHook {
 
         String eventId;
         if (needsSoldOut) {
-            // Crear evento y bloquear TODOS los asientos (evento agotado)
+            
             eventId = eventSetupService.createEventWithSeats(false);
             blockAllSeats(eventId);
-            // Allow Kafka reservation-created event to propagate to Catalog service
+            
             try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
         } else {
-            // Crear evento con asientos disponibles
+            
             eventId = eventSetupService.createEventWithSeats(false);
         }
 
         Serenity.setSessionVariable(ApiConstants.SESSION_WAITLIST_EVENT_ID).to(eventId);
         logger.info("Evento waitlist listo: {} (agotado={})", eventId, needsSoldOut);
 
-        // El escenario @RegistroDuplicado realiza el primer registro vía UI en el step @Dado
     }
 
     @After
@@ -89,9 +79,6 @@ public class WaitlistHook {
         }
     }
 
-    /**
-     * Bloquea todos los asientos del evento para simular un evento completamente agotado.
-     */
     private void blockAllSeats(String eventId) {
         try {
             var seatmap = catalogApi.getSeatmap(eventId);
@@ -112,10 +99,6 @@ public class WaitlistHook {
         }
     }
 
-    /**
-     * Pre-registra un email en la waitlist via API directa.
-     * Usado en @RegistroDuplicado para que el test solo verifique el rechazo.
-     */
     private void preRegistrarEmail(String email, String eventId) {
         try {
             String body = String.format("{\"email\":\"%s\",\"eventId\":\"%s\"}", email, eventId);

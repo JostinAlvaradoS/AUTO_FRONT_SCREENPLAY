@@ -5,10 +5,6 @@ import net.serenitybdd.screenplay.actions.Open;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: Navega a la página pública del evento (/events/{eventId}).
- * Usado en escenarios donde el evento está agotado y se muestra el banner de waitlist.
- */
 public class NavegarAlEventoAgotado implements Task {
 
     private static final String BASE_URL = System.getProperty("frontend.url", "http://localhost:3000");

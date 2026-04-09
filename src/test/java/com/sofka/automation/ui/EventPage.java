@@ -5,11 +5,6 @@ import org.openqa.selenium.By;
 
 public class EventPage {
 
-    /**
-     * Target for a specific seat button based on its aria-label or status.
-     * The component renders as: 
-     * aria-label="Seat {sectionCode}{rowNumber}-{seatNumber}, ${price}, {status}"
-     */
     public static final Target SEAT_BY_STATUS = Target.the("seat button by status")
             .locatedBy("//button[contains(@aria-label, '{0}')]");
 
@@ -28,7 +23,6 @@ public class EventPage {
     public static final Target SEATMAP_CONTAINER = Target.the("seatmap container")
             .locatedBy(".flex.flex-col.gap-6");
 
-    // Login UI Elements
     public static final Target USER_ID_INPUT = Target.the("user id input")
             .located(By.id("userId"));
 

@@ -27,10 +27,6 @@ public class WaitlistStepDefinitions {
 
     private String eventId;
 
-    // =====================================================================
-    // ESCENARIO 1: Registro exitoso (@RegistroExitoso)
-    // =====================================================================
-
     @Dado("que el evento {string} está agotado y el usuario navega a su página")
     public void eventoAgotadoNavegaAPagina(String eventName) {
         eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_WAITLIST_EVENT_ID);
@@ -63,10 +59,6 @@ public class WaitlistStepDefinitions {
         logger.info("Registro exitoso. Posición en cola: {}", pos);
     }
 
-    // =====================================================================
-    // ESCENARIO 2: Tickets disponibles (@TicketsDisponibles)
-    // =====================================================================
-
     @Dado("que el evento {string} tiene tickets disponibles")
     public void eventoConTicketsDisponibles(String eventName) {
         eventId = Serenity.sessionVariableCalled(ApiConstants.SESSION_WAITLIST_EVENT_ID);
@@ -87,10 +79,6 @@ public class WaitlistStepDefinitions {
                         ElResultadoDeWaitlist.botonWaitlistVisible(), is(false))
         );
     }
-
-    // =====================================================================
-    // ESCENARIO 3: Registro duplicado (@RegistroDuplicado)
-    // =====================================================================
 
     @Dado("que {string} ya está registrado en la lista del evento vía UI")
     public void yaRegistradoViaUI(String email) {
@@ -120,10 +108,6 @@ public class WaitlistStepDefinitions {
                         ElResultadoDeWaitlist.mostroError(), is(true))
         );
     }
-
-    // =====================================================================
-    // ESCENARIOS 4-6: verificación vía API Question
-    // =====================================================================
 
     @Dado("que {string} es el primero en la lista de espera del evento")
     public void primeroEnListaDeEspera(String email) {
@@ -218,10 +202,6 @@ public class WaitlistStepDefinitions {
                         HasPendingInWaitlist.paraEvento(eventId), is(false))
         );
     }
-
-    // =====================================================================
-    // Helpers
-    // =====================================================================
 
     private void registrarViaAPI(String email, String evtId) {
         try {
