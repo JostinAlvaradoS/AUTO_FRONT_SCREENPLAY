@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * DTO for Event Seatmap response from Catalog API
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -32,10 +29,6 @@ public class EventSeatmapDto {
         private Double basePrice;
     }
     
-    /**
-     * Get all seats with "available" status
-     * @return List of available seat IDs
-     */
     public List<String> getAvailableSeats() {
         if (seats == null || seats.isEmpty()) {
             return List.of();
@@ -46,10 +39,6 @@ public class EventSeatmapDto {
             .collect(Collectors.toList());
     }
     
-    /**
-     * Get first available seat
-     * @return First available seat ID or null
-     */
     public String getFirstAvailableSeat() {
         List<String> available = getAvailableSeats();
         return available.isEmpty() ? null : available.get(0);

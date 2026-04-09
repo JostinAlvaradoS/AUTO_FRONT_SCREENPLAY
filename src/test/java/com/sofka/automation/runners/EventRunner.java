@@ -8,7 +8,7 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("features")
+@SelectClasspathResource("features/hu01_reserva_asiento.feature")
 @ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "@ReservaValida or @ReservaInvalida")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "com.sofka.automation")
 @ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "pretty,html:target/cucumber-report/cucumber.html,net.serenitybdd.cucumber.core.plugin.SerenityReporterParallel")

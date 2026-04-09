@@ -12,11 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Service responsible for blocking seats for negative test scenarios.
- * Single Responsibility: Managing seat reservation for test setup.
- * Follows Dependency Inversion Principle: depends on abstractions, not concrete implementations.
- */
 public class SeatBlockingService {
     
     private static final Logger logger = LoggerFactory.getLogger(SeatBlockingService.class);
@@ -28,11 +23,6 @@ public class SeatBlockingService {
         this.inventoryApi = inventoryApi;
     }
 
-    /**
-     * Blocks the first available seat in an event for invalid reservation test scenarios
-     * @param eventId Event identifier
-     * @throws SeatReservationException if no seats are available or reservation fails
-     */
     public void blockFirstAvailableSeat(String eventId) {
         try {
             logger.info("Attempting to block first available seat for event: {}", eventId);
@@ -74,11 +64,6 @@ public class SeatBlockingService {
         }
     }
 
-    /**
-     * Stores blocking information in Serenity session for test assertions
-     * @param seatId Blocked seat identifier
-     * @param blockingUserId User who blocked the seat
-     */
     private void storeBlockingSessionVariables(String seatId, String blockingUserId) {
         Serenity.setSessionVariable(ApiConstants.SESSION_BLOCKED_SEAT_ID).to(seatId);
         Serenity.setSessionVariable(ApiConstants.SESSION_BLOCKING_USER_ID).to(blockingUserId);

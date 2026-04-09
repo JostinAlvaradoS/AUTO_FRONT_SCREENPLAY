@@ -10,10 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import static io.restassured.RestAssured.given;
 
-/**
- * RestAssured implementation of InventoryApiClient.
- * Handles all HTTP calls to Inventory API with proper error handling and logging.
- */
 public class RestAssuredInventoryApiClient implements InventoryApiClient {
     
     private static final Logger logger = LoggerFactory.getLogger(RestAssuredInventoryApiClient.class);

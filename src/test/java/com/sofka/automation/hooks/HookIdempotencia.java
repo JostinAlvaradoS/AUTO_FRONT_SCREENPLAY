@@ -14,16 +14,6 @@ import net.serenitybdd.screenplay.actors.OnlineCast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Hook para configurar el ambiente antes de cada escenario de prueba.
- * 
- * Responsabilidad única: Gestionar ciclo de vida de tests (@Before/@After).
- * Las operaciones específicas de API están delegadas a servicios.
- * 
- * Implementa Dependency Inversion Principle:
- * - Las dependencias son inyectadas a través de constructores
- * - Depende de abstracciones (interfaces), no implementaciones concretas
- */
 public class HookIdempotencia {
     
     private static final Logger logger = LoggerFactory.getLogger(HookIdempotencia.class);
@@ -38,7 +28,6 @@ public class HookIdempotencia {
         );
     }
 
-    // Constructor para testing con dependencias inyectadas
     public HookIdempotencia(EventSetupService eventSetupService, SeatBlockingService seatBlockingService) {
         this.eventSetupService = eventSetupService;
         this.seatBlockingService = seatBlockingService;
@@ -81,11 +70,6 @@ public class HookIdempotencia {
         }
     }
 
-    /**
-     * Checks if current scenario is for invalid reservation testing
-     * @param scenario Cucumber scenario
-     * @return true if scenario has @ReservaInvalida tag
-     */
     private boolean isInvalidReservationScenario(Scenario scenario) {
         return scenario.getSourceTagNames().contains(ApiConstants.TAG_INVALID_RESERVATION);
     }

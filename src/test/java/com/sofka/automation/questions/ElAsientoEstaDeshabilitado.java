@@ -13,7 +13,7 @@ public class ElAsientoEstaDeshabilitado implements Question<Boolean> {
     @Override
     public Boolean answeredBy(Actor actor) {
         try {
-            // Attempt: Look for button with disabled attribute and Reserved in aria-label
+            
             List<WebElementFacade> disabledButtons = EventPage.DISABLED_SEAT.resolveAllFor(actor);
             
             if (disabledButtons != null && !disabledButtons.isEmpty()) {
@@ -39,5 +39,3 @@ public class ElAsientoEstaDeshabilitado implements Question<Boolean> {
         return new ElAsientoEstaDeshabilitado();
     }
 }
-
-
